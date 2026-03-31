@@ -1,0 +1,8 @@
+.env
+*.pyc
+__pycache__/
+snackinfo.db
+node_modules/
+frontend/dist/
+frontend/.next/
+.playwright/

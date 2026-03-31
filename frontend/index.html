@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서울대 간식 알리미 🍩</title>
+  <style>
+    :root {
+      --blue: #003876;
+      --light-blue: #e8eef7;
+      --accent: #ff6b35;
+      --gray: #6b7280;
+      --bg: #f9fafb;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: #111827;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--blue);
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 { font-size: 1.3rem; font-weight: 700; }
+    header p  { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
+
+    .logo { font-size: 2rem; }
+
+    /* 탭 */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px 0;
+      border-bottom: 2px solid var(--border);
+      background: white;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--gray);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .tab-btn.active {
+      color: var(--blue);
+      border-bottom-color: var(--blue);
+    }
+
+    /* 메인 콘텐츠 */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* 카드 */
+    .event-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: box-shadow 0.15s;
+    }
+
+    .event-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .source-badge {
+      background: var(--light-blue);
+      color: var(--blue);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .meta-item .icon { font-size: 1rem; }
+
+    .card-desc {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: #374151;
+      background: var(--bg);
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .card-footer {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .quantity-tag {
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .source-link {
+      font-size: 0.82rem;
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .source-link:hover { text-decoration: underline; }
+
+    /* 날짜 없음 태그 */
+    .date-unknown {
+      font-size: 0.78rem;
+      color: var(--gray);
+      background: #f3f4f6;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    /* 로딩 / 빈 상태 */
+    .state-msg {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--gray);
+    }
+
+    .state-msg .emoji { font-size: 3rem; margin-bottom: 12px; }
+    .state-msg p { font-size: 0.95rem; }
+
+    /* 오늘 하이라이트 */
+    .today-label {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🍩</div>
+  <div>
+    <h1>서울대 간식 알리미</h1>
+    <p>서울대학교 각 단과대 공지사항에서 무료 간식 행사를 자동으로 찾아드립니다</p>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('upcoming', this)">예정 행사</button>
+  <button class="tab-btn" onclick="switchTab('today', this)">오늘</button>
+</div>
+
+<main id="main">
+  <div class="state-msg">
+    <div class="emoji">⏳</div>
+    <p>불러오는 중...</p>
+  </div>
+</main>
+
+<script>
+  // ▼▼▼ Supabase 설정 — 본인 프로젝트 값으로 교체하세요 ▼▼▼
+  const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+  const HEADERS = { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}` };
+  let currentTab = "upcoming";
+
+  async function loadEvents(tab) {
+    const main = document.getElementById("main");
+    main.innerHTML = `<div class="state-msg"><div class="emoji">⏳</div><p>불러오는 중...</p></div>`;
+
+    const today = new Date().toISOString().slice(0, 10);
+    let query;
+    if (tab === "today") {
+      query = `is_snack_event=eq.true&event_date=eq.${today}&order=event_time.asc`;
+    } else {
+      query = `is_snack_event=eq.true&or=(event_date.gte.${today},event_date.is.null)&order=event_date.asc,created_at.desc`;
+    }
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/events?${query}`, { headers: HEADERS });
+      const events = await res.json();
+      renderEvents(events, tab);
+    } catch (e) {
+      main.innerHTML = `<div class="state-msg"><div class="emoji">⚠️</div><p>데이터를 불러올 수 없습니다.<br>Supabase 설정을 확인하세요.</p></div>`;
+    }
+  }
+
+  function renderEvents(events, tab) {
+    const main = document.getElementById("main");
+
+    if (!events || events.length === 0) {
+      const msg = tab === "today" ? "오늘 예정된 간식 행사가 없습니다 🥲" : "등록된 간식 행사가 없습니다.";
+      main.innerHTML = `<div class="state-msg"><div class="emoji">🍽️</div><p>${msg}</p></div>`;
+      return;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+
+
+    main.innerHTML = events.map(e => {
+      const isToday = e.event_date === today;
+
+      const datePart = e.event_date
+        ? `<span class="meta-item"><span class="icon">📅</span>${isToday ? '<span class="today-label">오늘</span>' : ''}${formatDate(e.event_date)}</span>`
+        : `<span class="date-unknown">날짜 미정</span>`;
+
+      const timePart = e.event_time
+        ? `<span class="meta-item"><span class="icon">🕐</span>${e.event_time}</span>` : "";
+
+      const locationPart = e.location
+        ? `<span class="meta-item"><span class="icon">📍</span>${e.location}</span>` : "";
+
+      const organizerPart = e.organizer
+        ? `<span class="meta-item"><span class="icon">🏫</span>${e.organizer}</span>` : "";
+
+      const descPart = e.description
+        ? `<div class="card-desc">${e.description}</div>` : "";
+
+      const qtyPart = e.quantity
+        ? `<span class="quantity-tag">🎟 ${e.quantity}</span>` : `<span></span>`;
+
+      return `
+        <div class="event-card">
+          <div class="card-header">
+            <div class="card-title">${escHtml(e.title)}</div>
+            <span class="source-badge">${escHtml(e.source_name || "")}</span>
+          </div>
+          <div class="card-meta">
+            ${datePart}${timePart}${locationPart}${organizerPart}
+          </div>
+          ${descPart}
+          <div class="card-footer">
+            ${qtyPart}
+            <a class="source-link" href="${e.source_url}" target="_blank" rel="noopener">공지 원문 →</a>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    const day = days[new Date(iso).getDay()];
+    return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일 (${day})`;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function switchTab(tab, btn) {
+    currentTab = tab;
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    loadEvents(tab);
+  }
+
+  // 초기 로드
+  loadEvents("upcoming");
+</script>
+
+</body>
+</html>

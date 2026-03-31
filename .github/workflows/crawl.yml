@@ -1,0 +1,24 @@
+name: Crawl SNU Notices
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # 2시간마다
+  workflow_dispatch:        # GitHub에서 수동 실행 가능
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run crawler
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python crawl.py
