@@ -16,6 +16,11 @@ import hashlib
 import re
 from urllib.parse import urljoin, urlparse, urlencode, parse_qs, urlunparse
 
+
+def _normalize_wp_url(url: str) -> str:
+    """WordPress 페이지네이션 경로(/page/N/)를 제거해 article URL을 정규화한다."""
+    return re.sub(r'/page/\d+/', '/', url)
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -105,12 +110,16 @@ class StandardParser:
 
         notices = []
         # 후보 선택자들
+        custom_selector = self.source.get("custom_selector")
         rows = (
-            soup.select("table.board-list tbody tr")
-            or soup.select("table tbody tr")
-            or soup.select("ul.board-list li")
-            or soup.select(".bbs-list li")
-            or soup.select(".notice-list li")
+            soup.select(custom_selector) if custom_selector
+            else (
+                soup.select("table.board-list tbody tr")
+                or soup.select("table tbody tr")
+                or soup.select("ul.board-list li")
+                or soup.select(".bbs-list li")
+                or soup.select(".notice-list li")
+            )
         )
 
         for row in rows:
@@ -237,14 +246,16 @@ class WordPressParser:
             return []
 
         notices = []
+        seen_urls = set()
         for item in soup.select("article, .post, li.notice, .entry, .bbs_list li"):
             a_tag = item.find("a")
             if not a_tag:
                 continue
             title = a_tag.get_text(strip=True)
-            href = a_tag.get("href", "")
-            if not title or not href:
+            href = _normalize_wp_url(_absolute(self.base_url, a_tag.get("href", "")))
+            if not title or not href or href in seen_urls:
                 continue
+            seen_urls.add(href)
             date_el = item.select_one("time, .date, .published, [class*='date']")
             date_text = ""
             if date_el:

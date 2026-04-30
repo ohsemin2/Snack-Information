@@ -4,13 +4,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 크롤링 간격 (초)
-CRAWL_INTERVAL_SECONDS = 3600  # 1시간
+CRAWL_INTERVAL_SECONDS = 86400  # 1일
 
 # 요청 간 딜레이 (초) — 서버 부하 방지
 REQUEST_DELAY = 1.5
 
 # 각 공지사항 최대 페이지 수 (초과 시 중단)
-MAX_PAGES_PER_SOURCE = 3
+MAX_PAGES_PER_SOURCE = 5
 
 # 공지사항 소스 목록
 # type: "standard" (공통 SNU CMS), "wordpress", "custom"
@@ -115,5 +115,16 @@ SOURCES = [
         "name": "융합과학기술대학원",
         "url": "https://convergence.snu.ac.kr/bbs/board.php?bo_table=notice",
         "type": "gnuboard",
+    },
+    {
+        "name": "컴퓨터공학부",
+        "url": "https://cse.snu.ac.kr/community/notice",
+        "type": "standard",
+        "custom_selector": "ul.false li",
+    },
+    {
+        "name": "산업공학과",
+        "url": "https://ie.snu.ac.kr/notice/",
+        "type": "wordpress",
     },
 ]
