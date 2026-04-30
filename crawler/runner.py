@@ -7,7 +7,7 @@ Claude 분류기로 간식 이벤트 여부를 판별한다.
 import time
 import logging
 
-from config import SOURCES, REQUEST_DELAY, MAX_PAGES_PER_SOURCE
+from config import SOURCES, REQUEST_DELAY, MAX_PAGES_PER_SOURCE, GROQ_DELAY
 from crawler.sources import get_parser, fetch_body
 from crawler.dedup import url_hash
 
@@ -54,11 +54,13 @@ def run_crawl(db_session, classifier):
                 body = fetch_body(url)
                 notice["body"] = body
 
-                # Claude로 분류
+                # Groq로 분류
                 result = classifier.classify(notice)
+                time.sleep(GROQ_DELAY)
 
                 if result.get("is_snack_event"):
                     info = classifier.extract_info(notice)
+                    time.sleep(GROQ_DELAY)
                     event = Event(
                         url_hash=key,
                         source_name=notice["source_name"],

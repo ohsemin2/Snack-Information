@@ -9,6 +9,9 @@ CRAWL_INTERVAL_SECONDS = 86400  # 1일
 # 요청 간 딜레이 (초) — 서버 부하 방지
 REQUEST_DELAY = 1.5
 
+# Groq API 호출 간 딜레이 (초) — 분당 30 RPM 제한 대응
+GROQ_DELAY = 2.5
+
 # 각 공지사항 최대 페이지 수 (초과 시 중단)
 MAX_PAGES_PER_SOURCE = 5
 
