@@ -13,6 +13,7 @@ from classifier.rule_classifier import Classifier
 from crawler.runner import run_crawl
 
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 Base.metadata.create_all(bind=engine)
 
