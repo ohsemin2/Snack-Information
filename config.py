@@ -75,28 +75,18 @@ SOURCES = [
         "type": "standard",
     },
     {
-        "name": "의과대학",
-        "url": "https://medicine.snu.ac.kr/board/notice",
-        "type": "standard",
-    },
-    {
         "name": "간호대학",
         "url": "https://nursing.snu.ac.kr/board/notice",
         "type": "standard",
     },
     {
         "name": "약학대학",
-        "url": "https://snupharm.snu.ac.kr/board/notice",
-        "type": "standard",
+        "url": "https://snupharm.snu.ac.kr/공지사항/",
+        "type": "wordpress",
     },
     {
         "name": "수의과대학",
         "url": "https://vet.snu.ac.kr/category/board-3-BL-8Piv9u51-20211029154329/",
-        "type": "standard",
-    },
-    {
-        "name": "생활과학대학",
-        "url": "https://hes.snu.ac.kr/board/notice",
         "type": "standard",
     },
     {
@@ -108,8 +98,8 @@ SOURCES = [
     # ── 주요 학과/기관 ─────────────────────────────────────
     {
         "name": "기계공학부",
-        "url": "https://me.snu.ac.kr/ko/board/notice",
-        "type": "standard",
+        "url": "https://me.snu.ac.kr/공통-공지사항/",
+        "type": "wordpress",
     },
     {
         "name": "건축학과",

@@ -31,7 +31,9 @@ TIMEOUT = 15
 
 def _get(url: str) -> BeautifulSoup | None:
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        resp = requests.get(url, headers=HEADERS, timeout=TIMEOUT, verify=False)
         resp.raise_for_status()
         resp.encoding = resp.apparent_encoding or "utf-8"
         return BeautifulSoup(resp.text, "lxml")

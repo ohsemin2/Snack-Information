@@ -1,12 +1,11 @@
 """
-Gemini API 기반 간식 이벤트 분류기.
+Groq API 기반 간식 이벤트 분류기.
 """
 
 import os
 import json
 import logging
-from google import genai
-from google.genai import types
+from groq import Groq
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +14,10 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        api_key = os.environ.get("GEMINI_API_KEY")
+        api_key = os.environ.get("GROQ_API_KEY")
         if not api_key:
-            raise ValueError("GEMINI_API_KEY 환경변수가 설정되지 않았습니다.")
-        _client = genai.Client(api_key=api_key)
+            raise ValueError("GROQ_API_KEY 환경변수가 설정되지 않았습니다.")
+        _client = Groq(api_key=api_key)
     return _client
 
 
@@ -46,23 +45,16 @@ def classify(notice: dict) -> dict:
 
     try:
         client = _get_client()
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0,
-                response_mime_type="application/json",
-            ),
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            response_format={"type": "json_object"},
         )
-        text = response.text.strip()
-        # 코드블록 제거
-        if text.startswith("```"):
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
+        text = response.choices[0].message.content
         return json.loads(text)
     except Exception as e:
-        logger.error(f"Gemini classify 오류: {e}")
+        logger.error(f"Groq classify 오류: {e}")
         return {"is_snack_event": False, "reason": f"API 오류: {e}"}
 
 
@@ -91,22 +83,16 @@ def extract_info(notice: dict) -> dict:
 
     try:
         client = _get_client()
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0,
-                response_mime_type="application/json",
-            ),
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            response_format={"type": "json_object"},
         )
-        text = response.text.strip()
-        if text.startswith("```"):
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
+        text = response.choices[0].message.content
         return json.loads(text)
     except Exception as e:
-        logger.error(f"Gemini extract_info 오류: {e}")
+        logger.error(f"Groq extract_info 오류: {e}")
         return {
             "date": None, "time": None, "location": None,
             "description": title[:80], "organizer": None, "quantity": None,
