@@ -30,7 +30,7 @@ SOURCES = [
     },
     {
         "name": "사회과학대학",
-        "url": "https://social.snu.ac.kr/board/notice",
+        "url": "https://social.snu.ac.kr/공지사항/",
         "type": "standard",
     },
     {
@@ -41,17 +41,17 @@ SOURCES = [
     },
     {
         "name": "자연과학대학",
-        "url": "https://science.snu.ac.kr/board/notice",
+        "url": "https://science.snu.ac.kr/news/announcement",
         "type": "standard",
     },
     {
         "name": "사범대학",
-        "url": "https://edu.snu.ac.kr/board/notice",
+        "url": "https://edu.snu.ac.kr/category/board_17_gn_ldca7if5_20201130072915/",
         "type": "standard",
     },
     {
         "name": "경영대학",
-        "url": "https://cba.snu.ac.kr/ko/board/notice",
+        "url": "https://cba.snu.ac.kr/newsroom/notice",
         "type": "standard",
     },
     {
@@ -61,7 +61,7 @@ SOURCES = [
     },
     {
         "name": "미술대학",
-        "url": "https://art.snu.ac.kr/board/notice",
+        "url": "https://art.snu.ac.kr/category/design/?catemenu=Notice&type=major",
         "type": "standard",
     },
     {
@@ -91,7 +91,7 @@ SOURCES = [
     },
     {
         "name": "수의과대학",
-        "url": "https://vet.snu.ac.kr/board/notice",
+        "url": "https://vet.snu.ac.kr/category/board-3-BL-8Piv9u51-20211029154329/",
         "type": "standard",
     },
     {
