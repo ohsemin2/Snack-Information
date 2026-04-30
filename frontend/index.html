@@ -233,8 +233,8 @@
     </header>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('upcoming', this)">
-        예정 행사
+      <button class="tab-btn active" onclick="switchTab('all', this)">
+        전체 행사
       </button>
       <button class="tab-btn" onclick="switchTab('today', this)">오늘</button>
     </div>
@@ -268,7 +268,7 @@
         if (tab === "today") {
           query = `is_snack_event=eq.true&event_date=eq.${today}&order=event_time.asc`;
         } else {
-          query = `is_snack_event=eq.true&or=(event_date.gte.${today},event_date.is.null)&order=event_date.asc,created_at.desc`;
+          query = `is_snack_event=eq.true&order=event_date.desc.nullslast,created_at.desc`;
         }
 
         try {
@@ -289,7 +289,7 @@
           const msg =
             tab === "today"
               ? "오늘 예정된 간식 행사가 없습니다 🥲"
-              : "등록된 간식 행사가 없습니다.";
+              : "크롤링된 간식 행사가 없습니다.";
           main.innerHTML = `<div class="state-msg"><div class="emoji">🍽️</div><p>${msg}</p></div>`;
           return;
         }
@@ -370,7 +370,7 @@
       }
 
       // 초기 로드
-      loadEvents("upcoming");
+      loadEvents("all");
     </script>
   </body>
 </html>
