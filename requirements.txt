@@ -1,5 +1,5 @@
 # AI
-google-genai
+groq
 
 # Crawling
 requests==2.31.0
