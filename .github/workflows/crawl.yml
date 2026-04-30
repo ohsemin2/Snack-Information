@@ -21,4 +21,5 @@ jobs:
       - name: Run crawler
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python crawl.py
