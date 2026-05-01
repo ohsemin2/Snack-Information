@@ -54,13 +54,22 @@ def run_crawl(db_session, classifier):
                 body = fetch_body(url)
                 notice["body"] = body
 
-                # Groq로 분류
-                result = classifier.classify(notice)
-                time.sleep(GROQ_DELAY)
+                # Groq로 분류 — API 오류 시 저장하지 않고 스킵 (다음 크롤링에서 재시도)
+                try:
+                    result = classifier.classify(notice)
+                    time.sleep(GROQ_DELAY)
+                except Exception as e:
+                    logger.warning(f"  ⚠️ 분류 실패 (스킵): {notice['title']} — {e}")
+                    continue
 
                 if result.get("is_snack_event"):
-                    info = classifier.extract_info(notice)
-                    time.sleep(GROQ_DELAY)
+                    try:
+                        info = classifier.extract_info(notice)
+                        time.sleep(GROQ_DELAY)
+                    except Exception as e:
+                        logger.warning(f"  ⚠️ 정보 추출 실패 (기본값 사용): {e}")
+                        info = {"date": None, "time": None, "location": None,
+                                "description": notice["title"][:80], "organizer": None, "quantity": None}
                     event = Event(
                         url_hash=key,
                         source_name=notice["source_name"],

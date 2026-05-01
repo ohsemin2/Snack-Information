@@ -43,19 +43,14 @@ def classify(notice: dict) -> dict:
 반드시 아래 JSON 형식으로만 답하세요:
 {{"is_snack_event": true또는false, "reason": "판별 이유 한 줄"}}"""
 
-    try:
-        client = _get_client()
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            response_format={"type": "json_object"},
-        )
-        text = response.choices[0].message.content
-        return json.loads(text)
-    except Exception as e:
-        logger.error(f"Groq classify 오류: {e}")
-        return {"is_snack_event": False, "reason": f"API 오류: {e}"}
+    client = _get_client()
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        response_format={"type": "json_object"},
+    )
+    return json.loads(response.choices[0].message.content)
 
 
 def extract_info(notice: dict) -> dict:
@@ -81,22 +76,14 @@ def extract_info(notice: dict) -> dict:
   "quantity": "수량 또는 선착순 인원, 없으면 null"
 }}"""
 
-    try:
-        client = _get_client()
-        response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            response_format={"type": "json_object"},
-        )
-        text = response.choices[0].message.content
-        return json.loads(text)
-    except Exception as e:
-        logger.error(f"Groq extract_info 오류: {e}")
-        return {
-            "date": None, "time": None, "location": None,
-            "description": title[:80], "organizer": None, "quantity": None,
-        }
+    client = _get_client()
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        response_format={"type": "json_object"},
+    )
+    return json.loads(response.choices[0].message.content)
 
 
 class Classifier:
