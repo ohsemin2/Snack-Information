@@ -31,19 +31,9 @@ SOURCES = [
         "custom_selector": 'ul[class="false"] li',
     },
     {
-        "name": "융합과학기술대학원",
-        "url": "https://convergence.snu.ac.kr/bbs/board.php?bo_table=notice",
-        "type": "gnuboard",
-    },
-    {
         "name": "생명과학부",
         "url": "https://biosci.snu.ac.kr/board/notice",
         "type": "standard",
-    },
-    {
-        "name": "건축학과",
-        "url": "https://architecture.snu.ac.kr/notice/",
-        "type": "wordpress",
     },
     {
         "name": "기계공학부",
@@ -58,11 +48,6 @@ SOURCES = [
         "type": "wordpress",
     },
     {
-        "name": "수의과대학",
-        "url": "https://vet.snu.ac.kr/category/board-3-BL-8Piv9u51-20211029154329/",
-        "type": "standard",
-    },
-    {
         "name": "약학대학",
         "url": "https://snupharm.snu.ac.kr/공지사항/",
         "type": "wordpress",
@@ -73,14 +58,10 @@ SOURCES = [
         "type": "standard",
     },
     {
-        "name": "법과대학",
-        "url": "https://law.snu.ac.kr/board/notice",
-        "type": "standard",
-    },
-    {
         "name": "음악대학",
         "url": "https://music.snu.ac.kr/notice",
         "type": "wordpress",
+        "custom_selector": "li.pa_subject",
     },
     {
         "name": "미술대학",
@@ -98,11 +79,6 @@ SOURCES = [
         "type": "standard",
     },
     {
-        "name": "사범대학",
-        "url": "https://edu.snu.ac.kr/category/board_17_gn_ldca7if5_20201130072915/",
-        "type": "standard",
-    },
-    {
         "name": "자연과학대학",
         "url": "https://science.snu.ac.kr/news/announcement",
         "type": "standard",
@@ -116,7 +92,7 @@ SOURCES = [
     {
         "name": "사회과학대학",
         "url": "https://social.snu.ac.kr/공지사항/",
-        "type": "standard",
+        "type": "wordpress",
     },
     {
         "name": "인문대학",
