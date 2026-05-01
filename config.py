@@ -28,7 +28,7 @@ SOURCES = [
         "name": "컴퓨터공학부",
         "url": "https://cse.snu.ac.kr/community/notice",
         "type": "standard",
-        "custom_selector": "ul.false li",
+        "custom_selector": 'ul[class="false"] li',
     },
     {
         "name": "융합과학기술대학원",
