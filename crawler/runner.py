@@ -10,6 +10,7 @@ import logging
 from config import SOURCES, REQUEST_DELAY, MAX_PAGES_PER_SOURCE, GROQ_DELAY
 from crawler.sources import get_parser, fetch_body
 from crawler.dedup import url_hash
+from classifier.rule_classifier import CURRENT_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -44,10 +45,14 @@ def run_crawl(db_session, classifier):
 
                 key = url_hash(url)
 
-                # 이미 처리한 URL이면 스킵
+                # 이미 처리한 URL이면 스킵 (단, 다른 모델로 false 판별된 경우 재처리)
                 existing = db_session.query(Event).filter_by(url_hash=key).first()
                 if existing:
-                    continue
+                    if existing.is_snack_event or existing.classified_by == CURRENT_MODEL:
+                        continue
+                    # 구버전 모델이 false로 판별한 경우 → 재처리
+                    db_session.delete(existing)
+                    db_session.commit()
 
                 # 상세 페이지에서 본문 가져오기
                 time.sleep(REQUEST_DELAY)
@@ -84,6 +89,7 @@ def run_crawl(db_session, classifier):
                         organizer=info.get("organizer"),
                         quantity=info.get("quantity"),
                         raw_body=body[:5000],
+                        classified_by=CURRENT_MODEL,
                     )
                     db_session.add(event)
                     db_session.commit()
@@ -98,6 +104,7 @@ def run_crawl(db_session, classifier):
                         source_url=url,
                         raw_date=notice.get("date", ""),
                         is_snack_event=False,
+                        classified_by=CURRENT_MODEL,
                     )
                     db_session.add(non_event)
                     db_session.commit()

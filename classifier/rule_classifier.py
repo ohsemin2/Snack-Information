@@ -9,6 +9,26 @@ from groq import Groq
 
 logger = logging.getLogger(__name__)
 
+CURRENT_MODEL = "llama-3.3-70b-versatile"
+
+CLASSIFY_SYSTEM_PROMPT = """당신은 서울대학교 공지사항이 캠퍼스 내 무료 간식 나눔 이벤트인지 판별하는 전문가입니다.
+
+[TRUE로 판별해야 하는 경우]
+행사 목적에 무관하게, 현장에서 무료로 음식/음료/간식을 배포하는 내용이 있으면 true.
+예: 시험기간 간식 이벤트, 커피차 방문, 선착순 간식 증정, 취업설명회에서 간식 제공, 개강 행사 음료 나눔
+
+[FALSE로 판별해야 하는 경우]
+- 기업 채용공고에서 입사 후 복리후생으로 제공되는 간식/식대 언급
+- 식당 메뉴 안내, 영양 정보
+- 행사 내용에 간식 제공 언급이 전혀 없는 경우
+
+[핵심 원칙]
+- 현장에서 나눠준다는 내용이 조금이라도 있으면 true
+- 불확실하면 true로 판단 (놓치는 것이 더 나쁨)
+
+반드시 아래 JSON 형식으로만 답하세요:
+{"is_snack_event": true 또는 false, "reason": "판별 이유 한 줄"}"""
+
 _client = None
 
 def _get_client():
@@ -27,29 +47,18 @@ def classify(notice: dict) -> dict:
     Returns: {"is_snack_event": bool, "reason": str}
     """
     title = notice.get("title", "")
-    body = (notice.get("body", "") or "")[:600]
-
-    prompt = f"""다음은 서울대학교 공지사항입니다.
-이 공지사항에서 무료 음식/간식을 제공하는지 판별해주세요.
-
-판별 기준:
-- 행사 목적과 관계없이, 현장에서 무료로 음식/간식을 나눠준다는 내용이 있으면 true
-  (예: 채용설명회에서 간식 제공, 행사에서 커피/음료 나눔, 시험기간 간식 이벤트 등)
-- 채용공고에서 회사 입사 후 누릴 수 있는 복리후생(간식 제공, 식대 지원 등)은 false
-- 식당 메뉴 안내처럼 실제 나눠주는 행사가 아니면 false
-
-제목: {title}
-본문: {body}
-
-반드시 아래 JSON 형식으로만 답하세요:
-{{"is_snack_event": true또는false, "reason": "판별 이유 한 줄"}}"""
+    body = (notice.get("body", "") or "")[:300]
 
     client = _get_client()
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
+        model=CURRENT_MODEL,
+        messages=[
+            {"role": "system", "content": CLASSIFY_SYSTEM_PROMPT},
+            {"role": "user", "content": f"제목: {title}\n본문: {body}"},
+        ],
         temperature=0,
         response_format={"type": "json_object"},
+        max_tokens=100,
     )
     return json.loads(response.choices[0].message.content)
 
@@ -79,7 +88,7 @@ def extract_info(notice: dict) -> dict:
 
     client = _get_client()
     response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=CURRENT_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
         response_format={"type": "json_object"},
