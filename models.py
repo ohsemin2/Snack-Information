@@ -18,6 +18,7 @@ class Event(Base):
     raw_body = Column(Text)
 
     is_snack_event = Column(Boolean, default=True)
+    classified_by = Column(String(50), nullable=True)
     event_date = Column(String(10))
     event_time = Column(String(50))
     location = Column(String(200))
