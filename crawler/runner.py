@@ -62,6 +62,7 @@ def run_crawl(db_session, classifier):
                     logger.warning(f"  ⚠️ 분류 실패 (스킵): {notice['title']} — {e}")
                     continue
 
+                logger.info(f"  [{result.get('is_snack_event')}] {notice['title']} — {result.get('reason', '')}")
                 if result.get("is_snack_event"):
                     try:
                         info = classifier.extract_info(notice)
