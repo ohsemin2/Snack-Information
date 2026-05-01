@@ -29,6 +29,14 @@ class Event(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class SourceBookmark(Base):
+    __tablename__ = "source_bookmarks"
+
+    source_name = Column(String(100), primary_key=True)
+    latest_url = Column(String(500), nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
 class CrawlLog(Base):
     __tablename__ = "crawl_logs"
 

@@ -1,11 +1,15 @@
 """
 크롤링 실행 모듈.
 모든 소스를 순회하며 공지사항을 수집하고, 미분류 글을 DB에 저장한 뒤
-Claude 분류기로 간식 이벤트 여부를 판별한다.
+Groq 분류기로 간식 이벤트 여부를 판별한다.
+
+증분 크롤링: 소스별로 마지막으로 본 URL을 북마크로 저장.
+첫 실행은 1페이지만 수집해 기준점을 세우고, 이후엔 북마크 URL까지만 수집.
 """
 
 import time
 import logging
+from datetime import date, timedelta, datetime
 
 from config import SOURCES, REQUEST_DELAY, MAX_PAGES_PER_SOURCE, GROQ_DELAY
 from crawler.sources import get_parser, fetch_body
@@ -15,15 +19,23 @@ from classifier.rule_classifier import CURRENT_MODEL
 logger = logging.getLogger(__name__)
 
 
-def run_crawl(db_session, classifier):
-    """
-    전체 크롤링 + 분류 파이프라인.
+def _cleanup_old_events(db_session):
+    from models import Event
+    cutoff = (date.today() - timedelta(days=30)).isoformat()
+    deleted = db_session.query(Event).filter(
+        Event.is_snack_event == True,
+        Event.event_date.isnot(None),
+        Event.event_date < cutoff,
+    ).delete(synchronize_session=False)
+    db_session.commit()
+    if deleted:
+        logger.info(f"[CLEANUP] {deleted}건 삭제 (event_date 30일 초과)")
 
-    Args:
-        db_session: SQLAlchemy 세션
-        classifier: classifier.claude_client.Classifier 인스턴스
-    """
-    from models import CrawlLog, Event
+
+def run_crawl(db_session, classifier):
+    from models import CrawlLog, Event, SourceBookmark
+
+    _cleanup_old_events(db_session)
 
     total_new = 0
     total_snack = 0
@@ -32,34 +44,42 @@ def run_crawl(db_session, classifier):
         parser = get_parser(source)
         logger.info(f"[CRAWL] {source['name']} 시작")
 
-        for page in range(1, MAX_PAGES_PER_SOURCE + 1):
+        bookmark = db_session.query(SourceBookmark).filter_by(source_name=source['name']).first()
+        bookmark_url = bookmark.latest_url if bookmark else None
+        is_first_run = bookmark is None
+        max_pages = 1 if is_first_run else MAX_PAGES_PER_SOURCE
+        newest_url = None
+
+        for page in range(1, max_pages + 1):
             notices = parser.get_notices(page=page)
             if not notices:
                 break
 
-            new_in_page = 0
+            hit_bookmark = False
             for notice in notices:
                 url = notice.get("url", "")
                 if not url:
                     continue
 
-                key = url_hash(url)
+                if newest_url is None:
+                    newest_url = url
 
-                # 이미 처리한 URL이면 스킵 (단, 다른 모델로 false 판별된 경우 재처리)
+                if bookmark_url and url == bookmark_url:
+                    hit_bookmark = True
+                    break
+
+                key = url_hash(url)
                 existing = db_session.query(Event).filter_by(url_hash=key).first()
                 if existing:
                     if existing.is_snack_event or existing.classified_by == CURRENT_MODEL:
                         continue
-                    # 구버전 모델이 false로 판별한 경우 → 재처리
                     db_session.delete(existing)
                     db_session.commit()
 
-                # 상세 페이지에서 본문 가져오기
                 time.sleep(REQUEST_DELAY)
                 body = fetch_body(url)
                 notice["body"] = body
 
-                # Groq로 분류 — API 오류 시 저장하지 않고 스킵 (다음 크롤링에서 재시도)
                 try:
                     result = classifier.classify(notice)
                     time.sleep(GROQ_DELAY)
@@ -96,7 +116,6 @@ def run_crawl(db_session, classifier):
                     total_snack += 1
                     logger.info(f"  ✅ 간식 이벤트 저장: {notice['title']}")
                 else:
-                    # 간식 이벤트 아님 — URL만 기록해 다음 크롤링에서 재처리 방지
                     non_event = Event(
                         url_hash=key,
                         source_name=notice["source_name"],
@@ -109,14 +128,20 @@ def run_crawl(db_session, classifier):
                     db_session.add(non_event)
                     db_session.commit()
 
-                new_in_page += 1
                 total_new += 1
 
-            # 페이지에서 새 글이 없으면 더 이상 순회할 필요 없음
-            if new_in_page == 0:
+            if hit_bookmark:
                 break
 
             time.sleep(REQUEST_DELAY)
+
+        if newest_url:
+            if bookmark:
+                bookmark.latest_url = newest_url
+                bookmark.updated_at = datetime.utcnow()
+            else:
+                db_session.add(SourceBookmark(source_name=source['name'], latest_url=newest_url))
+            db_session.commit()
 
         logger.info(f"[CRAWL] {source['name']} 완료")
 
