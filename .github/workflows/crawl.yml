@@ -2,7 +2,7 @@ name: Crawl SNU Notices
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # 2시간마다
+    - cron: '0 0 * * *'  # 매일 자정 (UTC)
   workflow_dispatch:        # GitHub에서 수동 실행 가능
 
 jobs:
