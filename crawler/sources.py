@@ -247,7 +247,9 @@ class WordPressParser:
 
         notices = []
         seen_urls = set()
-        for item in soup.select("article, .post, li.notice, .entry, .bbs_list li"):
+        custom_selector = self.source.get("custom_selector")
+        selector = custom_selector or "article, .post, li.notice, .entry, .bbs_list li"
+        for item in soup.select(selector):
             a_tag = item.find("a")
             if not a_tag:
                 continue
