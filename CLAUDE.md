@@ -100,6 +100,22 @@ GitHub Actions Secrets에 등록해야 한다. 로컬 실행 시 `.env` 파일�
 
 `.github/workflows/crawl.yml`에서 cron으로 실행 주기를 제어한다. `workflow_dispatch`로 수동 실행도 가능.
 
+자동 크롤링을 멈추고 수동 실행만 남기려면 `.github/workflows/crawl.yml`의 `on` 블록에서 `schedule` 항목을 제거하고 아래처럼 둔다.
+
+```yaml
+on:
+  workflow_dispatch:
+```
+
+나중에 매일 자동 크롤링을 다시 시작하려면 `schedule` 항목을 복구한다.
+
+```yaml
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 매일 자정 (UTC), 한국 시간 오전 9시
+  workflow_dispatch:
+```
+
 ## 새 소스 추가 방법
 
 `config.py`의 `SOURCES` 리스트에 항목 추가:
